@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>M/S Prakash Bandhu Road Lines — Proposal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0b1f35;
+      --navy-mid: #132b47;
+      --gold: #c9a84c;
+      --gold-light: #e8c97b;
+      --cream: #fdf8f0;
+      --cream-dark: #f4ede0;
+      --ink: #1a1a2e;
+      --muted: #6b7280;
+      --border: #e2d9c8;
+      --white: #ffffff;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: #e8e4dd;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--ink);
+      line-height: 1.65;
+    }
+
+    /* ── FLOATING EDIT BUTTON ── */
+    .edit-toggle-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      background: var(--navy);
+      color: var(--gold);
+      border: 2px solid var(--gold);
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .edit-toggle-btn:hover {
+      background: var(--gold);
+      color: var(--navy);
+    }
+    .edit-toggle-btn.editing {
+      background: #10b981;
+      color: white;
+      border-color: #10b981;
+    }
+    
+    /* Highlight editable areas when active */
+    .document.is-editable [contenteditable="true"] {
+      outline: 2px dashed var(--gold);
+      outline-offset: 4px;
+      background: rgba(253, 248, 240, 0.5);
+    }
+
+    /* ── OUTER WRAPPER ── */
+    .document {
+      max-width: 860px;
+      margin: 32px auto 60px;
+      background: var(--white);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    /* ── DECORATIVE SIDE RULE ── */
+    .document::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 5px;
+      background: linear-gradient(180deg, var(--gold) 0%, var(--navy) 50%, var(--gold) 100%);
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: var(--navy);
+      padding: 52px 56px 44px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      right: -60px; bottom: -60px;
+      width: 260px; height: 260px;
+      border: 40px solid rgba(201,168,76,0.12);
+      border-radius: 50%;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      right: 40px; bottom: 20px;
+      width: 120px; height: 120px;
+      border: 20px solid rgba(201,168,76,0.08);
+      border-radius: 50%;
+    }
+
+    .header-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .header-eyebrow span {
+      font-size: 10px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 600;
+    }
+    .header-eyebrow::before, .header-eyebrow::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(201,168,76,0.35);
+    }
+    .header-eyebrow::before { max-width: 0; display: none; }
+
+    .header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(22px, 5vw, 38px);
+      color: var(--white);
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+
+    .header-tagline {
+      font-size: 11px;
+      letter-spacing: 3.5px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 500;
+    }
+
+    .gold-rule {
+      width: 60px;
+      height: 3px;
+      background: var(--gold);
+      margin: 20px 0 0;
+    }
+
+    /* ── BODY PADDING ── */
+    .body-wrap {
+      padding: 44px 56px 52px;
+    }
+
+    /* ── META ROW ── */
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 20px 24px;
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 13.5px;
+      margin-bottom: 32px;
+    }
+    .meta-row .to-block strong,
+    .meta-row .ref-block strong { color: var(--navy); font-weight: 600; }
+    .meta-row .ref-block { text-align: right; line-height: 1.8; }
+    .ref-badge {
+      display: inline-block;
+      margin-top: 6px;
+      background: var(--navy);
+      color: var(--gold);
+      font-size: 10px;
+      letter-spacing: 2px;
+      padding: 3px 10px;
+      border-radius: 2px;
+      font-weight: 600;
+    }
+
+    /* ── INTRO TEXT ── */
+    .intro {
+      font-size: 15px;
+      color: #374151;
+      margin-bottom: 32px;
+    }
+    .intro strong { color: var(--navy); }
+
+    /* ── SECTION HEADER ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 36px 0 18px;
+    }
+    .section-header .sh-accent {
+      width: 4px;
+      height: 28px;
+      background: var(--gold);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .section-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .section-header::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── FLEET HERO ── */
+    .fleet-hero {
+      background: var(--navy);
+      border-radius: 8px;
+      padding: 40px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      margin: 28px 0 36px;
+      position: relative;
+      overflow: hidden;
+    }
+    .fleet-hero::before {
+      content: '';
+      position: absolute;
+      left: -30px; top: -30px;
+      width: 180px; height: 180px;
+      border: 35px solid rgba(201,168,76,0.1);
+      border-radius: 50%;
+    }
+    .fleet-number {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(52px, 10vw, 80px);
+      color: var(--gold);
+      font-weight: 900;
+      line-height: 1;
+    }
+    .fleet-text { color: var(--white); }
+    .fleet-text .fleet-label {
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+      display: block;
+      margin-bottom: 4px;
+    }
+    .fleet-text .fleet-headline {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    /* ── EXPERIENCE TABLE ── */
+    .exp-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .exp-table thead tr {
+      background: var(--navy);
+      color: var(--white);
+    }
+    .exp-table thead th {
+      padding: 11px 18px;
+      font-size: 10px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      font-weight: 600;
+      text-align: left;
+    }
+    .exp-table thead th:last-child { text-align: right; }
+    .exp-table tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+    .exp-table tbody tr:nth-child(even) { background: var(--cream); }
+    .exp-table tbody tr:hover { background: #fffbf3; }
+    .exp-table td {
+      padding: 14px 18px;
+      font-size: 14px;
+    }
+    .client-name { font-weight: 500; color: var(--navy); }
+    .tenure {
+      text-align: right;
+      font-weight: 700;
+      color: var(--gold);
+      white-space: nowrap;
+    }
+    .tenure::after {
+      content: ' ✦';
+      font-size: 9px;
+      opacity: 0.7;
+    }
+
+    /* ── OP CARDS ── */
+    .op-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 4px;
+    }
+    .op-card {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px 22px;
+      position: relative;
+      overflow: hidden;
+    }
+    .op-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--gold);
+    }
+    .op-card strong {
+      display: block;
+      font-size: 13px;
+      color: var(--navy);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .op-card p { font-size: 13.5px; color: #4b5563; }
+
+    /* ── VALUE LIST ── */
+    .value-list {
+      list-style: none;
+      display: grid;
+      gap: 14px;
+    }
+    .value-list li {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      font-size: 14.5px;
+      color: #374151;
+    }
+    .value-list li .bullet {
+      width: 26px; height: 26px;
+      background: var(--gold);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 11px;
+      color: var(--navy);
+      font-weight: 700;
+      margin-top: 1px;
+    }
+    .value-list li strong { color: var(--navy); font-weight: 600; }
+
+    /* ── MANAGEMENT ── */
+    .mgmt-box {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .mgmt-persons {
+      display: flex;
+      gap: 0;
+    }
+    .mgmt-person {
+      flex: 1;
+      padding: 28px 24px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+    }
+    .mgmt-person:last-child { border-right: none; }
+    .person-avatar {
+      width: 56px; height: 56px;
+      background: var(--navy);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      color: var(--gold);
+      font-weight: 700;
+    }
+    .mgmt-person strong {
+      display: block;
+      font-size: 15px;
+      color: var(--navy);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .mgmt-person span {
+      font-size: 11.5px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+    .hindi-quote {
+      background: var(--navy);
+      color: var(--gold-light);
+      padding: 18px 28px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      line-height: 1.6;
+      font-style: italic;
+    }
+
+    /* ── ADDRESS ── */
+    .address-card {
+      background: var(--cream);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 24px 28px;
+      font-size: 14px;
+      line-height: 1.9;
+      margin-top: 4px;
+    }
+    .address-card strong { color: var(--navy); }
+    .address-row { display: flex; gap: 8px; align-items: baseline; }
+    .addr-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+      min-width: 48px;
+    }
+
+    /* ── CLOSING ── */
+    .closing {
+      font-size: 14.5px;
+      color: #374151;
+      margin-top: 36px;
+      margin-bottom: 48px;
+    }
+
+    /* ── SIGNATURE ── */
+    .signature-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-top: 28px;
+      border-top: 1px solid var(--border);
+    }
+    .sig-block { font-size: 14px; line-height: 1.8; }
+    .sig-block .sig-line {
+      width: 160px;
+      border-bottom: 1.5px solid var(--navy);
+      margin: 28px 0 6px;
+    }
+    .sig-block strong { color: var(--navy); }
+
+    .stamp-box {
+      width: 140px; height: 100px;
+      border: 2px dashed var(--border);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+      color: #cbd5e1;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* ── PAGE DIVIDER ── */
+    .page-break {
+      border: none;
+      border-top: 2px solid var(--border);
+      margin: 48px 0;
+      position: relative;
+    }
+    .page-break::before {
+      content: '· · ·';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--white);
+      padding: 0 12px;
+      color: var(--gold);
+      font-size: 14px;
+      letter-spacing: 6px;
+    }
+
+    /* ── FOOTER STRIP ── */
+    .doc-footer {
+      background: var(--navy);
+      padding: 14px 56px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 1px;
+    }
+    .doc-footer span { color: var(--gold); font-weight: 600; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      .document { margin: 0; box-shadow: none; }
+      .document::before { display: none; }
+      .header { padding: 36px 24px 32px; }
+      .body-wrap { padding: 28px 24px 40px; }
+      .meta-row { flex-direction: column; gap: 14px; }
+      .meta-row .ref-block { text-align: left; }
+      .fleet-hero { flex-direction: column; gap: 20px; padding: 32px 20px; text-align: center; }
+      .op-grid { grid-template-columns: 1fr; }
+      .mgmt-persons { flex-direction: column; }
+      .mgmt-person { border-right: none; border-bottom: 1px solid var(--border); }
+      .signature-row { flex-direction: column; gap: 28px; align-items: flex-start; }
+      .doc-footer { flex-direction: column; gap: 6px; padding: 14px 24px; text-align: center; }
+    }
+
+    @media print {
+      body { background: white; }
+      .edit-toggle-btn { display: none; } /* Hide edit button when printing */
+      .document { box-shadow: none; margin: 0; max-width: 100%; }
+      .document.is-editable [contenteditable="true"] { outline: none; background: transparent; }
+      .page-break { page-break-after: always; border: none; margin: 0; }
+      .page-break::before { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<button class="edit-toggle-btn" id="editBtn" onclick="toggleEditMode()">✏️ Edit Proposal</button>
+
+<div class="document" id="proposalDoc">
+
+  <div class="header">
+    <div class="header-eyebrow"><span>Logistics &amp; Transport Services</span></div>
+    <h1 contenteditable="false">M/S Prakash Bandhu<br>Road Lines</h1>
+    <p class="header-tagline" contenteditable="false">Premium Transport &amp; Logistics Services</p>
+    <div class="gold-rule"></div>
+  </div>
+
+  <div class="body-wrap">
+
+    <div class="meta-row">
+      <div class="to-block" contenteditable="false">
+        <strong>To,</strong><br>
+        The Logistics Manager,<br>
+        [Recipient Company Name],<br>
+        [City, State]
+      </div>
+      <div class="ref-block" contenteditable="false">
+        <strong>Date:</strong> May 13, 2026<br>
+        <strong>Reference:</strong> PBRL/2026/PROP<br>
+        <span class="ref-badge">BUSINESS PROPOSAL</span>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="sh-accent"></div>
+      <h2 contenteditable="false">Subject</h2>
+    </div>
+    <p class="intro" contenteditable="false">
+      Dear Sir / Madam,<br><br>
+      We are pleased to introduce <strong>M/S Prakash Bandhu Road Lines</strong> as your
+      potential logistics partner. With decades of industry knowledge and a robust fleet
+      infrastructure, we specialise in high-efficiency cargo movement for India's leading
+      FMCG and Beverage brands.
+    </p>
+
+    <div class="fleet-hero">
+      <div class="fleet-number" contenteditable="false">100+</div>
+      <div class="fleet-text">
+        <span class="fleet-label">Connected Fleet Strength</span>
+        <span class="fleet-headline" contenteditable="false">Vehicles Ready<br>Across Routes</span>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="sh-accent"></div>
+      <h2>Our Prestigious Experience</h2>
+    </div>
+
+    <table class="exp-table">
+      <thead>
+        <tr>
+          <th>Client / Partner</th>
+          <th style="text-align:right;">Association</th>
+        </tr>
+      </thead>
+      <tbody contenteditable="false">
+        <tr>
+          <td class="client-name">Bisleri International Private Limited</td>
+          <td class="tenure">8 Years</td>
+        </tr>
+        <tr>
+          <td class="client-name">SLMG Beverages Pvt Ltd (Coca-Cola Godown)</td>
+          <td class="tenure">6 Years</td>
+        </tr>
+        <tr>
+          <td class="client-name">Fena Private Limited</td>
+          <td class="tenure">5 Years</td>
+        </tr>
+        <tr>
+          <td class="client-name">Shubhangi Goldie Masala Private Limited</td>
+          <td class="tenure">4 Years</td>
+        </tr>
+        <tr>
+          <td class="client-name">RSPL Group</td>
+          <td class="tenure">4 Years</td>
+        </tr>
+        <tr>
+          <td class="client-name">Supreme Private Limited</td>
+          <td class="tenure">3 Years</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="section-header">
+      <div class="sh-accent"></div>
+      <h2>Operational Excellence</h2>
+    </div>
+    <div class="op-grid" contenteditable="false">
+      <div class="op-card">
+        <strong>Timely Delivery</strong>
+        <p>Optimised route planning ensures your supply chain timelines are always met without compromise.</p>
+      </div>
+      <div class="op-card">
+        <strong>Fleet Diversity</strong>
+        <p>Multiple vehicle types ready to handle varied load capacities and specialised cargo requirements.</p>
+      </div>
+    </div>
+
+    <hr class="page-break" />
+
+    <div class="section-header">
+      <div class="sh-accent"></div>
+      <h2>Value Proposition</h2>
+    </div>
+    <ul class="value-list" contenteditable="false">
+      <li>
+        <div class="bullet">01</div>
+        <div><strong>Scalable Solutions —</strong> Our 100+ vehicle network allows seamless scale-up during peak seasons without disruption to your supply chain.</div>
+      </li>
+      <li>
+        <div class="bullet">02</div>
+        <div><strong>Safety Assurance —</strong> Rigorous vehicle maintenance and trained, vetted drivers ensure zero damage to goods in transit.</div>
+      </li>
+      <li>
+        <div class="bullet">03</div>
+        <div><strong>Full Transparency —</strong> Real-time coordination and clear documentation for every consignment, every time.</div>
+      </li>
+      <li>
+        <div class="bullet">04</div>
+        <div><strong>24 / 7 Support —</strong> Proactive communication to resolve any logistical hurdles immediately, day or night.</div>
+      </li>
+    </ul>
+
+    <div class="section-header">
+      <div class="sh-accent"></div>
+      <h2>Management Commitment</h2>
+    </div>
+    <div class="mgmt-box">
+      <div class="mgmt-persons" contenteditable="false">
+        <div class="mgmt-person">
+          <div class="person-avatar">AD</div>
+          <strong>Mr. Aditya Dwivedi</strong>
+          <span>Manager</span>
+        </div>
+        <div class="mgmt-person">
+          <div class="person-avatar">AD</div>
+          <strong>Mr. Adbit Dwivedi</strong>
+          <span>Marketing Executive</span>
+        </div>
+      </div>
+      <div class="hindi-quote" contenteditable="false">
+        "Aapse lagatar touch me rahenge — kisi bhi tarah ki koi bhi asuvidha nahi hogi."
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="sh-accent"></div>
+      <h2>Company Office Address</h2>
+    </div>
+    <div class="address-card" contenteditable="false">
+      <strong>M/S PRAKASH BANDHU ROAD LINES</strong><br>
+      Plot No. 19, E-Block, New Transport Nagar,<br>
+      Lucknow, Uttar Pradesh — [Pincode]<br><br>
+      <div class="address-row"><span class="addr-label">Phone</span>[Phone Number]</div>
+      <div class="address-row"><span class="addr-label">Email</span>[Email Address]</div>
+    </div>
+
+    <p class="closing" contenteditable="false">
+      We are eager to begin a mutually beneficial association. Please let us know when we
+      may visit your office for a formal discussion — it would be our honour.
+    </p>
+
+    <div class="signature-row">
+      <div class="sig-block" contenteditable="false">
+        Yours Sincerely,
+        <div class="sig-line"></div>
+        <strong>Authorised Signatory</strong><br>
+        M/S Prakash Bandhu Road Lines
+      </div>
+      <div class="stamp-box">Official<br>Stamp</div>
+    </div>
+
+  </div><div class="doc-footer">
+    <div>© 2026 M/S Prakash Bandhu Road Lines</div>
+    <div>Ref: <span>PBRL/2026/PROP</span></div>
+    <div>Lucknow, Uttar Pradesh</div>
+  </div>
+
+</div><script>
+  function toggleEditMode() {
+    const btn = document.getElementById('editBtn');
+    const doc = document.getElementById('proposalDoc');
+    // Select all elements that have contenteditable attribute
+    const editableElements = doc.querySelectorAll('[contenteditable]');
+    
+    // Check current state based on button class
+    if (btn.classList.contains('editing')) {
+      // Switch back to view mode
+      editableElements.forEach(el => el.setAttribute('contenteditable', 'false'));
+      doc.classList.remove('is-editable');
+      btn.classList.remove('editing');
+      btn.innerHTML = '✏️ Edit Proposal';
+    } else {
+      // Switch to edit mode
+      editableElements.forEach(el => el.setAttribute('contenteditable', 'true'));
+      doc.classList.add('is-editable');
+      btn.classList.add('editing');
+      btn.innerHTML = '✅ Save Changes';
+    }
+  }
+</script>
+
+</body>
+</html>
+
